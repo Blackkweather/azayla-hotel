@@ -29,14 +29,12 @@ export default function Navbar() {
         scrolled ? 'bg-white/98 shadow-sm backdrop-blur-sm' : 'bg-transparent'
       )}
     >
-      <a
-        href="#hero"
-        className={cn(
-          'font-cormorant text-[1.8rem] font-bold transition-colors',
-          scrolled ? 'text-deep-blue' : 'text-white'
-        )}
-      >
-        Azayla Hotel
+      <a href="#hero" className="shrink-0">
+        <img
+          src="/logo-removebg-preview.png"
+          alt="Azayla Hotel"
+          className="h-[100px] w-auto object-contain drop-shadow-sm"
+        />
       </a>
 
       {/* Desktop */}

@@ -43,8 +43,9 @@ export default function About() {
 
   return (
     <section id="about" className="py-24 px-6 max-w-6xl mx-auto">
-      <div className="text-center mb-16 section-underline scrolled-fade" ref={ref}>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue">About Azayla Hotel</h2>
+      <div className="text-center mb-16 scrolled-fade" ref={ref}>
+        <p className="eyebrow mb-3">Our Story</p>
+        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">About Azayla Hotel</h2>
       </div>
 
       <div className="grid md:grid-cols-2 gap-16 items-center">

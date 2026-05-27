@@ -23,8 +23,8 @@ export default function Footer() {
 
           {/* Brand */}
           <div>
-            <a href="#hero" className="font-cormorant text-[1.9rem] font-bold text-white block mb-3">
-              Azayla Hotel
+            <a href="#hero" className="inline-block mb-3">
+              <img src="/logo-removebg-preview.png" alt="Azayla Hotel" className="h-[100px] w-auto object-contain brightness-0 invert" />
             </a>
             <p className="text-sm leading-relaxed text-white/55 max-w-[260px]">
               A boutique riad in the heart of Asilah's whitewashed medina, where Moroccan soul meets Atlantic charm.

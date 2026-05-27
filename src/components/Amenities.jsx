@@ -16,14 +16,22 @@ const CATEGORIES = [
     items: ['Air conditioning', 'Private bathrooms', 'Flat-screen TV', 'Daily housekeeping'],
   },
   {
-    title: 'Dining',
+    title: 'Nearby Restaurants',
     color: 'bg-terracotta',
     icon: (
       <svg className="w-9 h-9 mb-3" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 32h20M12 32V14a8 8 0 0 1 16 0v18M20 6v4"/>
+        <path d="M14 6v10c0 3.3 2.7 6 6 6s6-2.7 6-6V6"/>
+        <line x1="20" y1="22" x2="20" y2="34"/>
+        <line x1="13" y1="34" x2="27" y2="34"/>
+        <line x1="14" y1="12" x2="26" y2="12"/>
       </svg>
     ),
-    items: ['Breakfast included', 'Traditional Moroccan tea', 'Rooftop dining', 'Local specialities'],
+    items: [
+      'Moroccan cuisine steps away',
+      'Fresh seafood restaurants',
+      'Mediterranean & Spanish tapas',
+      'Rooftop cafés & tea houses',
+    ],
   },
   {
     title: 'Services',
@@ -58,8 +66,9 @@ export default function Amenities() {
   return (
     <section id="amenities" className="py-24 px-6 bg-[#f9f6f2]">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16 section-underline">
-          <h2 className="font-cormorant text-[2.8rem] text-deep-blue">Hotel Amenities</h2>
+        <div className="text-center mb-16">
+          <p className="eyebrow mb-3">What We Offer</p>
+          <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">Hotel Amenities</h2>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -34,8 +34,9 @@ export default function Contact() {
 
   return (
     <section id="contact" className="py-24 px-6 max-w-4xl mx-auto">
-      <div className="text-center mb-14 section-underline">
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue">Contact Us</h2>
+      <div className="text-center mb-14">
+        <p className="eyebrow mb-3">Get in Touch</p>
+        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">Contact Us</h2>
       </div>
 
       {/* Contact cards */}
@@ -101,7 +102,7 @@ export default function Contact() {
                 value={form.message}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-nunito focus:outline-none focus:border-terracotta transition-colors resize-none"
-                placeholder="How can we help you?"
+                placeholder="Tell us your preferred dates, room type, or any questions…"
               />
             </div>
             <Button type="submit" className="w-full rounded-xl" size="lg">

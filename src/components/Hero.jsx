@@ -8,53 +8,35 @@ export default function Hero() {
       className="relative h-screen flex items-center justify-center text-center overflow-hidden"
       style={{
         backgroundImage:
-          'linear-gradient(rgba(0,0,0,0.42),rgba(0,0,0,0.42)), url(/hero-hotel-azayla.jpeg)',
+          'linear-gradient(rgba(0,0,0,0.58),rgba(0,0,0,0.48)), url(/hero-hotel-azayla.jpeg)',
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center 30%',
         backgroundColor: '#1b3a4b',
       }}
     >
-      <div className="fade-in-up px-4">
-        {/* ── Rating Badge ── */}
-        <div className="inline-flex items-center gap-4 bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl px-5 py-3 mb-7">
-          {/* Score */}
-          <div className="text-center leading-none">
-            <span className="font-cormorant text-4xl font-bold text-gold block">9.2</span>
-            <span className="text-white/90 text-[11px] font-semibold tracking-wider uppercase mt-0.5 block">
-              Wonderful
-            </span>
-          </div>
+      <div className="fade-in-up px-4 flex flex-col items-center">
+        {/* Eyebrow */}
+        <p className="text-[0.65rem] text-white/60 uppercase tracking-[4px] mb-6">
+          Boutique Riad · Asilah, Morocco
+        </p>
 
-          {/* Divider */}
-          <div className="w-px h-10 bg-white/25 shrink-0" />
-
-          {/* Source */}
-          <div className="text-left">
-            <div className="text-white text-sm font-semibold">127+ verified reviews</div>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[#003580] bg-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">
-                booking
-              </span>
-              <span className="text-white/60 text-xs">.com</span>
-            </div>
-          </div>
-        </div>
-
-        <h1 className="font-cormorant text-[clamp(2.5rem,8vw,4.5rem)] font-bold text-white mb-3 drop-shadow-lg">
+        <h1 className="font-cormorant text-[clamp(3rem,9vw,5.5rem)] font-bold text-white mb-5 drop-shadow-lg leading-none">
           Azayla Hotel
         </h1>
-        <p className="text-xl text-sand italic mb-10 drop-shadow">
+
+        {/* Gold ornament */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-px w-16 bg-gold/60" />
+          <div className="w-1.5 h-1.5 rounded-full bg-gold" />
+          <div className="h-px w-16 bg-gold/60" />
+        </div>
+
+        <p className="text-lg text-sand/90 italic mb-10 drop-shadow tracking-wide">
           Where the Atlantic meets Moroccan Soul
         </p>
 
         <Button asChild size="lg">
-          <a
-            href="https://www.booking.com/hotel/ma/azayla-asilah.fr.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Book Now
-          </a>
+          <a href="#contact">Reserve Your Stay</a>
         </Button>
       </div>
 

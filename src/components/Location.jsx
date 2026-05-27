@@ -19,8 +19,9 @@ const INFO = [
 export default function Location() {
   return (
     <section id="location" className="py-24 px-6 max-w-6xl mx-auto">
-      <div className="text-center mb-14 section-underline">
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue">Location</h2>
+      <div className="text-center mb-14">
+        <p className="eyebrow mb-3">Find Us</p>
+        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">Location</h2>
       </div>
 
       <div className="rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.1)] mb-8">
