@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Eye, EyeOff, LogOut, ExternalLink, BedDouble, Users, LayoutGrid } from 'lucide-react'
+import { Plus, Edit2, Trash2, Eye, EyeOff, LogOut, ExternalLink, BedDouble, Users, LayoutGrid, CalendarCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import RoomModal from './RoomModal'
+import BookingsList from './BookingsList'
 
 export default function AdminDashboard({ session }) {
   const [rooms, setRooms] = useState([])
@@ -10,6 +11,16 @@ export default function AdminDashboard({ session }) {
   const [editingRoom, setEditingRoom] = useState(null)
   const [togglingId, setTogglingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [activeTab, setActiveTab] = useState('rooms') // 'rooms' | 'bookings'
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    supabase
+      .from('hotel_bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .then(({ count }) => setPendingCount(count ?? 0))
+  }, [])
 
   async function fetchRooms() {
     const { data } = await supabase.from('rooms').select('*').order('display_order')
@@ -90,6 +101,41 @@ export default function AdminDashboard({ session }) {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+        {/* ── Tab switcher ── */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('rooms')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors border ${
+              activeTab === 'rooms'
+                ? 'bg-deep-blue text-white border-deep-blue shadow-sm'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-deep-blue/30'
+            }`}
+          >
+            <LayoutGrid size={15} /> Rooms
+          </button>
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors border relative ${
+              activeTab === 'bookings'
+                ? 'bg-deep-blue text-white border-deep-blue shadow-sm'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-deep-blue/30'
+            }`}
+          >
+            <CalendarCheck size={15} /> Reservations
+            {pendingCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-terracotta text-white rounded-full text-[0.6rem] font-bold flex items-center justify-center">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* ── Bookings tab ── */}
+        {activeTab === 'bookings' && <BookingsList />}
+
+        {/* ── Rooms tab ── */}
+        {activeTab === 'rooms' && <>
 
         {/* ── Stats ── */}
         <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -236,14 +282,16 @@ export default function AdminDashboard({ session }) {
         )}
       </main>
 
+        </>}
+
       {/* ── Mobile floating Add button ── */}
-      <button
+      {activeTab === 'rooms' && <button
         onClick={openAdd}
         className="sm:hidden fixed bottom-6 right-5 w-14 h-14 bg-terracotta hover:bg-terracotta/90 active:scale-95 text-white rounded-full shadow-xl flex items-center justify-center transition-all z-40"
         aria-label="Add Room"
       >
         <Plus size={24} />
-      </button>
+      </button>}
 
       {modalOpen && (
         <RoomModal

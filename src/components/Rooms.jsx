@@ -4,6 +4,7 @@ import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { useT } from '@/hooks/useT'
 import { supabase } from '@/lib/supabase'
+import BookingModal from './BookingModal'
 
 // ── Skeleton card shown while loading ────────────────────────────────
 function RoomSkeleton() {
@@ -22,7 +23,7 @@ function RoomSkeleton() {
 }
 
 // ── Single room card ──────────────────────────────────────────────────
-function RoomCard({ room }) {
+function RoomCard({ room, onBook }) {
   const [current, setCurrent] = useState(0)
   const [hovered, setHovered] = useState(false)
   const t = useT()
@@ -148,8 +149,11 @@ function RoomCard({ room }) {
         </ul>
 
         <div className="mt-auto">
-          <Button asChild className="w-full rounded-none tracking-widest text-xs uppercase">
-            <a href="#contact">{t('rooms.reserve')}</a>
+          <Button
+            className="w-full rounded-none tracking-widest text-xs uppercase"
+            onClick={onBook}
+          >
+            {t('rooms.reserve')}
           </Button>
         </div>
       </div>
@@ -162,6 +166,7 @@ export default function Rooms() {
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [bookingRoom, setBookingRoom] = useState(null)
   const t = useT()
 
   useEffect(() => {
@@ -190,9 +195,22 @@ export default function Rooms() {
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
         {loading
           ? Array.from({ length: 5 }).map((_, i) => <RoomSkeleton key={i} />)
-          : rooms.map(room => <RoomCard key={room.id} room={room} />)
+          : rooms.map(room => (
+              <RoomCard
+                key={room.id}
+                room={room}
+                onBook={() => setBookingRoom(room)}
+              />
+            ))
         }
       </div>
+
+      {bookingRoom && (
+        <BookingModal
+          room={bookingRoom}
+          onClose={() => setBookingRoom(null)}
+        />
+      )}
     </section>
   )
 }
