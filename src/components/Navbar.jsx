@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Menu, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Menu, X, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/context/LanguageContext'
 
 const NAV_LINKS = [
   { href: '#about', label: 'About' },
@@ -11,9 +12,23 @@ const NAV_LINKS = [
   { href: '#contact', label: 'Contact' },
 ]
 
+const LANGUAGES = [
+  { code: 'en', label: 'EN', name: 'English' },
+  { code: 'fr', label: 'FR', name: 'Français' },
+  { code: 'ar', label: 'AR', name: 'العربية' },
+  { code: 'es', label: 'ES', name: 'Español' },
+  { code: 'de', label: 'DE', name: 'Deutsch' },
+  { code: 'it', label: 'IT', name: 'Italiano' },
+  { code: 'nl', label: 'NL', name: 'Nederlands' },
+  { code: 'pt', label: 'PT', name: 'Português' },
+]
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [langOpen, setLangOpen] = useState(false)
+  const langRef = useRef(null)
+  const { lang, setLang } = useLanguage()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -21,6 +36,23 @@ export default function Navbar() {
     onScroll()
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  function pickLang(code) {
+    setLang(code)
+    setLangOpen(false)
+  }
+
+  const textColor = scrolled ? 'text-deep-blue' : 'text-white'
 
   return (
     <nav
@@ -38,20 +70,53 @@ export default function Navbar() {
       </a>
 
       {/* Desktop */}
-      <ul className="hidden md:flex gap-8 list-none m-0 p-0">
+      <ul className="hidden md:flex gap-8 list-none m-0 p-0 items-center">
         {NAV_LINKS.map(({ href, label }) => (
           <li key={href}>
             <a
               href={href}
               className={cn(
                 'font-medium text-sm tracking-wide transition-colors hover:text-terracotta',
-                scrolled ? 'text-deep-blue' : 'text-white'
+                textColor
               )}
             >
               {label}
             </a>
           </li>
         ))}
+
+        {/* Language picker */}
+        <li className="relative" ref={langRef}>
+          <button
+            onClick={() => setLangOpen(v => !v)}
+            className={cn(
+              'flex items-center gap-1.5 font-medium text-sm tracking-wide transition-colors hover:text-terracotta',
+              textColor
+            )}
+            aria-label="Select language"
+          >
+            <Globe size={15} />
+            <span>{lang.toUpperCase()}</span>
+          </button>
+
+          {langOpen && (
+            <div className="absolute right-0 top-full mt-3 w-40 bg-white rounded-xl shadow-xl border border-black/5 py-1.5 overflow-hidden">
+              {LANGUAGES.map(({ code, label, name }) => (
+                <button
+                  key={code}
+                  onClick={() => pickLang(code)}
+                  className={cn(
+                    'w-full flex items-center gap-2.5 px-4 py-2 text-sm text-left transition-colors hover:bg-stone-50',
+                    lang === code ? 'text-terracotta font-semibold' : 'text-deep-blue'
+                  )}
+                >
+                  <span className="w-7 text-xs font-bold text-stone-400">{label}</span>
+                  <span>{name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </li>
       </ul>
 
       {/* Mobile toggle */}
@@ -62,8 +127,8 @@ export default function Navbar() {
         aria-expanded={open}
       >
         {open
-          ? <X size={24} className={scrolled ? 'text-deep-blue' : 'text-white'} />
-          : <Menu size={24} className={scrolled ? 'text-deep-blue' : 'text-white'} />
+          ? <X size={24} className={textColor} />
+          : <Menu size={24} className={textColor} />
         }
       </button>
 
@@ -80,6 +145,24 @@ export default function Navbar() {
               {label}
             </a>
           ))}
+
+          {/* Language row in mobile menu */}
+          <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-black/5 w-full px-6">
+            {LANGUAGES.map(({ code, label }) => (
+              <button
+                key={code}
+                onClick={() => { pickLang(code); setOpen(false) }}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-xs font-bold border transition-colors',
+                  lang === code
+                    ? 'bg-terracotta text-white border-terracotta'
+                    : 'bg-white text-deep-blue border-black/10 hover:border-terracotta hover:text-terracotta'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </nav>

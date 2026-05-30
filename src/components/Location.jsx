@@ -4,7 +4,7 @@ import { Card } from './ui/card'
 const INFO = [
   {
     icon: <MapPin size={18} className="text-terracotta shrink-0 mt-0.5" />,
-    text: 'Avenue Moulay Ismail, Asilah 90050, Morocco',
+    text: '20 Rue Ibn Rochd, Asilah 90050, Maroc',
   },
   {
     icon: <Clock size={18} className="text-terracotta shrink-0 mt-0.5" />,

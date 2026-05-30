@@ -10,7 +10,7 @@ const EXPLORE = [
 ]
 
 const CONTACT = [
-  { icon: <MapPin size={14} className="text-gold mt-0.5 shrink-0" />, text: 'Avenue Moulay Ismail, Asilah 90050, Morocco' },
+  { icon: <MapPin size={14} className="text-gold mt-0.5 shrink-0" />, text: '20 Rue Ibn Rochd, Asilah 90050, Maroc' },
   { icon: <Phone size={14} className="text-gold mt-0.5 shrink-0" />, text: '+212 539-416717' },
   { icon: <Mail size={14} className="text-gold mt-0.5 shrink-0" />, text: 'azayla.hotel@gmail.com' },
 ]
