@@ -9,11 +9,21 @@ function fmtDate(d) {
   })
 }
 
-function fmtPrice(n, currency) {
-  return (
-    new Intl.NumberFormat('fr-MA', { maximumFractionDigits: 0 }).format(Number(n)) +
-    ' ' + (currency || 'MAD')
-  )
+/**
+ * Format an already-converted amount in a specific currency.
+ * Uses Intl.NumberFormat with the currency's own formatting conventions.
+ */
+function fmtAmount(n, currency) {
+  try {
+    return new Intl.NumberFormat('en', {
+      style:                'currency',
+      currency:             currency || 'MAD',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+    }).format(Number(n))
+  } catch {
+    return `${Number(n).toLocaleString()} ${currency || 'MAD'}`
+  }
 }
 
 export default function BookingSuccess() {
@@ -221,7 +231,7 @@ export default function BookingSuccess() {
                         Amount Paid
                       </p>
                       <p className="text-sm font-bold text-emerald-600">
-                        {fmtPrice(booking.meta.amount, booking.meta.currency)}
+                        {fmtAmount(booking.meta.amount, booking.meta.currency)}
                       </p>
                     </div>
                   </div>

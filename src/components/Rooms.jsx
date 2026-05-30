@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Users, BedDouble, Check } from 'lucide-react
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { useT } from '@/hooks/useT'
+import { useCurrency } from '@/context/LanguageContext'
 import { supabase } from '@/lib/supabase'
 import BookingModal from './BookingModal'
 
@@ -27,6 +28,7 @@ function RoomCard({ room, onBook }) {
   const [current, setCurrent] = useState(0)
   const [hovered, setHovered] = useState(false)
   const t = useT()
+  const { formatPrice } = useCurrency()
   const total = room.images?.length ?? 0
 
   const next = useCallback(() => setCurrent(c => (c + 1) % total), [total])
@@ -38,9 +40,7 @@ function RoomCard({ room, onBook }) {
     return () => clearInterval(timer)
   }, [hovered, next, total])
 
-  const formattedPrice = room.price_per_night
-    ? new Intl.NumberFormat('fr-MA', { style: 'decimal', maximumFractionDigits: 0 }).format(room.price_per_night)
-    : null
+  const formattedPrice = formatPrice(room.price_per_night)
 
   return (
     <div
@@ -67,7 +67,7 @@ function RoomCard({ room, onBook }) {
         {/* Price pill overlay */}
         {formattedPrice && (
           <div className="absolute bottom-4 right-4 z-[3] bg-deep-blue/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide">
-            {formattedPrice} {room.currency}<span className="text-white/60 font-normal"> / night</span>
+            {formattedPrice}<span className="text-white/60 font-normal"> / night</span>
           </div>
         )}
 

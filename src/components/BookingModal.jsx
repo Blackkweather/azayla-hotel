@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { supabase } from '@/lib/supabase'
+import { useCurrency } from '@/context/LanguageContext'
 import CalendarPicker from './CalendarPicker'
 
 // Stripe.js loaded lazily — only when user clicks "Continue to Payment"
@@ -21,13 +22,6 @@ function fmtDate(d) {
   return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', {
     day: 'numeric', month: 'short', year: 'numeric',
   })
-}
-
-function fmtPrice(n, currency) {
-  return (
-    new Intl.NumberFormat('fr-MA', { maximumFractionDigits: 0 }).format(n) +
-    ' ' + (currency || 'MAD')
-  )
 }
 
 // ─── Step indicator (3 steps now — success is its own page) ─────────────────
@@ -70,6 +64,8 @@ function Steps({ step }) {
 // ─── Main modal ──────────────────────────────────────────────────────────────
 
 export default function BookingModal({ room, onClose }) {
+  const { currency, formatPrice, getAmount } = useCurrency()
+
   // Step 1
   const [checkIn,      setCheckIn]      = useState(null)
   const [checkOut,     setCheckOut]     = useState(null)
@@ -92,8 +88,10 @@ export default function BookingModal({ room, onClose }) {
 
   const [step, setStep] = useState(1)
 
-  const n     = nightCount(checkIn, checkOut)
-  const total = n > 0 && room.price_per_night ? n * Number(room.price_per_night) : null
+  const n        = nightCount(checkIn, checkOut)
+  // totalMAD = raw base amount; total = converted to visitor's currency for display + payment
+  const totalMAD = n > 0 && room.price_per_night ? n * Number(room.price_per_night) : null
+  const total    = totalMAD ? getAmount(totalMAD) : null
 
   // Fetch booked ranges so calendar greys them out
   useEffect(() => {
@@ -144,8 +142,8 @@ export default function BookingModal({ room, onClose }) {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount:          total,
-          currency:        room.currency || 'MAD',
+          amount:          total,            // already converted to visitor's currency
+          currency:        currency,         // detected from IP (EUR, GBP, USD, MAD, …)
           room_id:         room.id,
           room_name:       room.name,
           guest_name:      name.trim(),
@@ -212,7 +210,7 @@ export default function BookingModal({ room, onClose }) {
               <p className="text-xs text-terracotta/80 uppercase tracking-wider">{room.subtitle}</p>
               {room.price_per_night && (
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {fmtPrice(room.price_per_night, room.currency)}
+                  {formatPrice(room.price_per_night)}
                   <span className="text-gray-400"> / night</span>
                 </p>
               )}
@@ -268,13 +266,13 @@ export default function BookingModal({ room, onClose }) {
               {n > 0 && total && (
                 <div className="bg-[#f9f6f2] rounded-2xl p-4 space-y-2">
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>{fmtPrice(room.price_per_night, room.currency)} × {n} night{n !== 1 ? 's' : ''}</span>
-                    <span>{fmtPrice(total, room.currency)}</span>
+                    <span>{formatPrice(room.price_per_night)} × {n} night{n !== 1 ? 's' : ''}</span>
+                    <span>{formatPrice(totalMAD)}</span>
                   </div>
                   <div className="h-px bg-gray-200" />
                   <div className="flex justify-between font-bold">
                     <span className="text-deep-blue">Total</span>
-                    <span className="text-terracotta">{fmtPrice(total, room.currency)}</span>
+                    <span className="text-terracotta">{formatPrice(totalMAD)}</span>
                   </div>
                 </div>
               )}
@@ -310,7 +308,7 @@ export default function BookingModal({ room, onClose }) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400 text-xs">{guests} guest{guests !== 1 ? 's' : ''}</span>
-                  {total && <span className="font-bold text-terracotta">{fmtPrice(total, room.currency)}</span>}
+                  {totalMAD && <span className="font-bold text-terracotta">{formatPrice(totalMAD)}</span>}
                 </div>
               </div>
 
@@ -389,10 +387,10 @@ export default function BookingModal({ room, onClose }) {
               </button>
 
               {/* Booking summary pill */}
-              {total && (
+              {totalMAD && (
                 <div className="flex items-center justify-between bg-[#f9f6f2] rounded-xl px-4 py-3 text-sm">
                   <span className="text-gray-500">{n} night{n !== 1 ? 's' : ''} · {guests} guest{guests !== 1 ? 's' : ''}</span>
-                  <span className="font-bold text-terracotta">{fmtPrice(total, room.currency)}</span>
+                  <span className="font-bold text-terracotta">{formatPrice(totalMAD)}</span>
                 </div>
               )}
 
