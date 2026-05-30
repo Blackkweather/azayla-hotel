@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import {
   X, Users, Check, Loader2, AlertCircle,
-  Phone, Mail, User, MessageSquare, Lock,
+  Phone, Mail, User, MessageSquare, ChevronLeft,
 } from 'lucide-react'
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { supabase } from '@/lib/supabase'
 import CalendarPicker from './CalendarPicker'
 
-// Stripe.js is loaded lazily — only when the user enters the details step.
-// This prevents the Stripe Developer overlay from appearing on normal page visits.
+// Stripe.js loaded lazily — only when user clicks "Continue to Payment"
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -25,13 +24,15 @@ function fmtDate(d) {
 }
 
 function fmtPrice(n, currency) {
-  return new Intl.NumberFormat('fr-MA', { maximumFractionDigits: 0 }).format(n) +
+  return (
+    new Intl.NumberFormat('fr-MA', { maximumFractionDigits: 0 }).format(n) +
     ' ' + (currency || 'MAD')
+  )
 }
 
-// ─── Step indicator ─────────────────────────────────────────────────────────
+// ─── Step indicator (3 steps now — success is its own page) ─────────────────
 
-const STEP_LABELS = ['Dates', 'Details', 'Payment', 'Confirmed']
+const STEP_LABELS = ['Dates', 'Details', 'Payment']
 
 function Steps({ step }) {
   return (
@@ -66,82 +67,15 @@ function Steps({ step }) {
   )
 }
 
-// ─── Stripe payment form ─────────────────────────────────────────────────────
-
-function PaymentForm({ amount, currency, onSuccess, onBack }) {
-  const stripe   = useStripe()
-  const elements = useElements()
-  const [processing, setProcessing] = useState(false)
-  const [msg, setMsg] = useState(null)
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    if (!stripe || !elements) return
-    setProcessing(true)
-    setMsg(null)
-
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: { return_url: window.location.origin },
-      redirect: 'if_required',
-    })
-
-    if (error) {
-      setMsg(error.message)
-      setProcessing(false)
-    } else if (paymentIntent?.status === 'succeeded') {
-      onSuccess(paymentIntent)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Amount */}
-      <div className="flex items-center justify-between bg-[#f9f6f2] rounded-2xl px-5 py-4">
-        <span className="text-sm text-gray-500">Total due</span>
-        <span className="text-lg font-bold text-terracotta">{fmtPrice(amount, currency)}</span>
-      </div>
-
-      {/* Stripe card */}
-      <div className="p-4 border border-gray-200 rounded-2xl">
-        <PaymentElement options={{ layout: 'tabs' }} />
-      </div>
-
-      {msg && (
-        <div className="flex items-start gap-2 p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-          <AlertCircle size={15} className="shrink-0 mt-0.5" /> {msg}
-        </div>
-      )}
-
-      <p className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
-        <Lock size={11} /> Secured by Stripe · SSL encrypted
-      </p>
-
-      <div className="flex gap-3">
-        <button type="button" onClick={onBack}
-          className="px-5 py-3.5 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
-          Back
-        </button>
-        <button type="submit" disabled={!stripe || processing}
-          className="flex-1 py-3.5 bg-terracotta hover:bg-terracotta/90 disabled:opacity-50 text-white rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
-          {processing
-            ? <><Loader2 size={16} className="animate-spin" /> Processing…</>
-            : `Pay ${fmtPrice(amount, currency)}`}
-        </button>
-      </div>
-    </form>
-  )
-}
-
 // ─── Main modal ──────────────────────────────────────────────────────────────
 
 export default function BookingModal({ room, onClose }) {
   // Step 1
-  const [checkIn,     setCheckIn]     = useState(null)
-  const [checkOut,    setCheckOut]    = useState(null)
-  const [guests,      setGuests]      = useState(1)
-  const [checking,    setChecking]    = useState(false)
-  const [unavailable, setUnavailable] = useState(false)
+  const [checkIn,      setCheckIn]      = useState(null)
+  const [checkOut,     setCheckOut]     = useState(null)
+  const [guests,       setGuests]       = useState(1)
+  const [checking,     setChecking]     = useState(false)
+  const [unavailable,  setUnavailable]  = useState(false)
   const [bookedRanges, setBookedRanges] = useState([])
 
   // Step 2
@@ -150,13 +84,11 @@ export default function BookingModal({ room, onClose }) {
   const [phone,    setPhone]    = useState('')
   const [requests, setRequests] = useState('')
 
-  // Step 3 — Payment Intent pre-fetched in background
-  const [clientSecret,  setClientSecret]  = useState(null)
-  const [piError,       setPiError]       = useState(null)
-  const [stripeInst,    setStripeInst]    = useState(null)
-
-  // Step 4
-  const [confirmed, setConfirmed] = useState(null)
+  // Step 3 — Checkout Session
+  const [clientSecret,     setClientSecret]     = useState(null)
+  const [stripeInst,       setStripeInst]       = useState(null)
+  const [creatingSession,  setCreatingSession]  = useState(false)
+  const [sessionError,     setSessionError]     = useState(null)
 
   const [step, setStep] = useState(1)
 
@@ -172,35 +104,6 @@ export default function BookingModal({ room, onClose }) {
       .not('status', 'in', '("cancelled")')
       .then(({ data }) => setBookedRanges(data ?? []))
   }, [room.id])
-
-  // ── Pre-load Stripe + Payment Intent the moment step 2 starts ──────────
-  // Stripe.js loads in background while the user types their details,
-  // so step 3 (payment form) appears instantly with zero delay.
-  useEffect(() => {
-    if (step !== 2 || !total || clientSecret) return
-
-    // Lazy-load Stripe only now (not on page load — avoids the dev overlay)
-    import('@stripe/stripe-js').then(({ loadStripe }) => {
-      const p = loadStripe((import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '').trim())
-      setStripeInst(p)
-    })
-
-    fetch('/api/create-payment-intent', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount:    total,
-        currency:  room.currency || 'MAD',
-        room_name: room.name,
-      }),
-    })
-      .then(r => r.json())
-      .then(json => {
-        if (json.error) throw new Error(json.error)
-        setClientSecret(json.clientSecret)
-      })
-      .catch(err => setPiError('Payment setup failed: ' + err.message))
-  }, [step, total])
 
   // ── Step 1 — Availability check ────────────────────────────────────────
   async function checkAvailability() {
@@ -221,66 +124,73 @@ export default function BookingModal({ room, onClose }) {
     else setUnavailable(true)
   }
 
-  // ── Step 2 → 3 — Just validate form + wait for clientSecret ───────────
-  function goToPayment(e) {
+  // ── Step 2 → 3 — Create Checkout Session with full guest details ───────
+  async function goToPayment(e) {
     e.preventDefault()
-    if (!clientSecret) {
-      // Still loading — rare; wait briefly
-      setPiError('Payment is still loading, please wait a moment.')
-      return
-    }
-    setPiError(null)
-    setStep(3)
-  }
+    if (!name.trim() || !email.trim()) return
 
-  // ── Step 3 — Payment success: save booking, then step 4 ───────────────
-  async function handlePaymentSuccess(paymentIntent) {
-    const { data: bk } = await supabase
-      .from('hotel_bookings')
-      .insert({
-        room_id:                  room.id,
-        room_name:                room.name,
-        guest_name:               name.trim(),
-        guest_email:              email.trim().toLowerCase(),
-        guest_phone:              phone.trim() || null,
-        check_in:                 checkIn,
-        check_out:                checkOut,
-        guests:                   Number(guests),
-        total_price:              total,
-        currency:                 room.currency || 'MAD',
-        status:                   'paid',
-        special_requests:         requests.trim() || null,
-        stripe_payment_intent_id: paymentIntent.id,
+    setCreatingSession(true)
+    setSessionError(null)
+
+    try {
+      // Lazy-load Stripe only now
+      if (!stripeInst) {
+        const { loadStripe } = await import('@stripe/stripe-js')
+        const inst = loadStripe((import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '').trim())
+        setStripeInst(inst)
+      }
+
+      const res = await fetch('/api/create-checkout-session', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount:          total,
+          currency:        room.currency || 'MAD',
+          room_id:         room.id,
+          room_name:       room.name,
+          guest_name:      name.trim(),
+          guest_email:     email.trim().toLowerCase(),
+          guest_phone:     phone.trim() || '',
+          guest_requests:  requests.trim() || '',
+          check_in:        checkIn,
+          check_out:       checkOut,
+          nights:          n,
+          guests:          Number(guests),
+          origin:          window.location.origin,
+        }),
       })
-      .select()
-      .single()
 
-    setConfirmed({ ...(bk || {}), guest_email: email, total_price: total, currency: room.currency || 'MAD' })
-    setStep(4)
+      const json = await res.json()
+      if (json.error) throw new Error(json.error)
+      setClientSecret(json.clientSecret)
+      setStep(3)
+    } catch (err) {
+      setSessionError('Payment setup failed: ' + err.message)
+    } finally {
+      setCreatingSession(false)
+    }
   }
 
-  // Stripe Elements appearance matching hotel theme
-  const appearance = {
-    theme: 'stripe',
-    variables: {
-      colorPrimary:    '#c17c5a',
-      colorBackground: '#ffffff',
-      colorText:       '#1b3a4b',
-      colorDanger:     '#df1b41',
-      fontFamily:      'Nunito, system-ui, sans-serif',
-      borderRadius:    '12px',
-    },
+  // ── Go back from step 3 → 2 (clear session so a fresh one is created) ──
+  function backToDetails() {
+    setStep(2)
+    setClientSecret(null)
+    setSessionError(null)
   }
 
   return (
     <div className="fixed inset-0 z-[3000] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-10 w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[94vh] sm:max-h-[88vh] overflow-hidden">
+      <div className={`relative z-10 w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all ${
+        step === 3 ? 'max-h-[96vh] sm:max-h-[92vh]' : 'max-h-[94vh] sm:max-h-[88vh]'
+      }`}>
 
         {/* Close */}
-        <button onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 z-10 transition-colors">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 z-10 transition-colors"
+        >
           <X size={16} />
         </button>
 
@@ -291,8 +201,11 @@ export default function BookingModal({ room, onClose }) {
         <div className="px-6 pt-4 pb-4 shrink-0 border-b border-gray-50">
           <div className="flex items-center gap-3">
             {room.images?.[0] && (
-              <img src={room.images[0]} alt={room.name}
-                className="w-14 h-14 rounded-xl object-cover shrink-0 shadow-sm" />
+              <img
+                src={room.images[0]}
+                alt={room.name}
+                className="w-14 h-14 rounded-xl object-cover shrink-0 shadow-sm"
+              />
             )}
             <div className="min-w-0">
               <p className="font-cormorant text-[1.2rem] font-semibold text-deep-blue truncate">{room.name}</p>
@@ -331,14 +244,22 @@ export default function BookingModal({ room, onClose }) {
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
                   <Users size={13} className="text-gold" />
-                  <label className="text-[0.7rem] font-bold text-gray-400 uppercase tracking-widest">Guests</label>
+                  <label className="text-[0.7rem] font-bold text-gray-400 uppercase tracking-widest">
+                    Guests
+                  </label>
                 </div>
                 <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-1">
-                  <button type="button" onClick={() => setGuests(g => Math.max(1, g - 1))}
-                    className="w-11 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-deep-blue hover:border-terracotta text-lg font-bold transition-colors">−</button>
+                  <button
+                    type="button"
+                    onClick={() => setGuests(g => Math.max(1, g - 1))}
+                    className="w-11 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-deep-blue hover:border-terracotta text-lg font-bold transition-colors"
+                  >−</button>
                   <span className="flex-1 text-center font-semibold text-deep-blue">{guests}</span>
-                  <button type="button" onClick={() => setGuests(g => Math.min(room.guests || 4, g + 1))}
-                    className="w-11 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-deep-blue hover:border-terracotta text-lg font-bold transition-colors">+</button>
+                  <button
+                    type="button"
+                    onClick={() => setGuests(g => Math.min(room.guests || 4, g + 1))}
+                    className="w-11 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-deep-blue hover:border-terracotta text-lg font-bold transition-colors"
+                  >+</button>
                 </div>
                 <p className="text-xs text-gray-400 text-center mt-1">Max {room.guests || 4} guests</p>
               </div>
@@ -365,9 +286,12 @@ export default function BookingModal({ room, onClose }) {
                 </div>
               )}
 
-              <button type="button" onClick={checkAvailability}
+              <button
+                type="button"
+                onClick={checkAvailability}
                 disabled={!checkIn || !checkOut || n <= 0 || checking}
-                className="w-full py-4 bg-terracotta hover:bg-terracotta/90 disabled:opacity-40 text-white rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                className="w-full py-4 bg-terracotta hover:bg-terracotta/90 disabled:opacity-40 text-white rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+              >
                 {checking
                   ? <><Loader2 size={16} className="animate-spin" /> Checking…</>
                   : 'Check Availability →'}
@@ -392,17 +316,22 @@ export default function BookingModal({ room, onClose }) {
 
               {/* Fields */}
               {[
-                { k: 'name',  label: 'Full Name', icon: <User size={11} />,        type: 'text',  val: name,     set: setName,     ph: 'Your full name',     req: true  },
-                { k: 'email', label: 'Email',     icon: <Mail size={11} />,        type: 'email', val: email,    set: setEmail,    ph: 'your@email.com',     req: true  },
-                { k: 'phone', label: 'Phone',     icon: <Phone size={11} />,       type: 'tel',   val: phone,    set: setPhone,    ph: '+212 6xx xxx xxx',   req: false },
+                { k: 'name',  label: 'Full Name', icon: <User  size={11} />, type: 'text',  val: name,  set: setName,  ph: 'Your full name',   req: true  },
+                { k: 'email', label: 'Email',     icon: <Mail  size={11} />, type: 'email', val: email, set: setEmail, ph: 'your@email.com',   req: true  },
+                { k: 'phone', label: 'Phone',     icon: <Phone size={11} />, type: 'tel',   val: phone, set: setPhone, ph: '+212 6xx xxx xxx', req: false },
               ].map(f => (
                 <div key={f.k}>
                   <label className="flex items-center gap-1 text-[0.7rem] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                     {f.icon} {f.label}{f.req && <span className="text-terracotta">*</span>}
                   </label>
-                  <input required={f.req} type={f.type} value={f.val}
-                    onChange={e => f.set(e.target.value)} placeholder={f.ph}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-terracotta transition-colors" />
+                  <input
+                    required={f.req}
+                    type={f.type}
+                    value={f.val}
+                    onChange={e => f.set(e.target.value)}
+                    placeholder={f.ph}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-terracotta transition-colors"
+                  />
                 </div>
               ))}
 
@@ -410,98 +339,79 @@ export default function BookingModal({ room, onClose }) {
                 <label className="flex items-center gap-1 text-[0.7rem] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                   <MessageSquare size={11} /> Special Requests
                 </label>
-                <textarea rows={3} value={requests} onChange={e => setRequests(e.target.value)}
+                <textarea
+                  rows={3}
+                  value={requests}
+                  onChange={e => setRequests(e.target.value)}
                   placeholder="Arrival time, celebrations, dietary needs…"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-terracotta transition-colors resize-none" />
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-terracotta transition-colors resize-none"
+                />
               </div>
 
-              {piError && (
+              {sessionError && (
                 <div className="flex items-start gap-2 p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                  <AlertCircle size={15} className="shrink-0 mt-0.5" /> {piError}
+                  <AlertCircle size={15} className="shrink-0 mt-0.5" /> {sessionError}
                 </div>
               )}
 
-              {/* Loading indicator while PI is fetching in background */}
-              {!clientSecret && !piError && (
-                <p className="flex items-center gap-2 text-xs text-gray-400 justify-center">
-                  <Loader2 size={12} className="animate-spin" /> Preparing payment…
-                </p>
-              )}
-
               <div className="flex gap-3">
-                <button type="button" onClick={() => setStep(1)}
-                  className="px-5 py-3.5 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="px-5 py-3.5 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+                >
                   Back
                 </button>
-                <button type="submit" disabled={!clientSecret}
-                  className="flex-1 py-3.5 bg-terracotta hover:bg-terracotta/90 disabled:opacity-50 text-white rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
-                  {!clientSecret
-                    ? <><Loader2 size={15} className="animate-spin" /> Loading…</>
+                <button
+                  type="submit"
+                  disabled={creatingSession}
+                  className="flex-1 py-3.5 bg-terracotta hover:bg-terracotta/90 disabled:opacity-50 text-white rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                  {creatingSession
+                    ? <><Loader2 size={15} className="animate-spin" /> Setting up payment…</>
                     : 'Continue to Payment →'}
                 </button>
               </div>
             </form>
           )}
 
-          {/* ════ STEP 3 — Payment (instant — clientSecret already ready) ══ */}
-          {step === 3 && clientSecret && stripeInst && (
-            <Elements stripe={stripeInst} options={{ clientSecret, appearance }}>
-              <PaymentForm
-                amount={total}
-                currency={room.currency || 'MAD'}
-                onSuccess={handlePaymentSuccess}
-                onBack={() => setStep(2)}
-              />
-            </Elements>
-          )}
+          {/* ════ STEP 3 — Stripe Embedded Checkout ════════════════════ */}
+          {step === 3 && (
+            <div className="space-y-4">
 
-          {/* ════ STEP 4 — Confirmed ════════════════════════════════════ */}
-          {step === 4 && confirmed && (
-            <div className="text-center py-4 space-y-5">
-              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
-                <Check size={36} className="text-emerald-500" />
-              </div>
-
-              <div>
-                <h3 className="font-cormorant text-2xl font-semibold text-deep-blue mb-1">Booking Confirmed!</h3>
-                <p className="text-sm text-gray-500">Payment received · your stay is locked in.</p>
-              </div>
-
-              <div className="bg-deep-blue/5 border border-deep-blue/10 rounded-2xl p-5 text-left space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-400 uppercase tracking-widest">Reference</span>
-                  <span className="font-mono font-bold text-deep-blue text-sm">{confirmed.booking_ref}</span>
-                </div>
-                <div className="h-px bg-gray-100" />
-                <div className="space-y-2 text-sm">
-                  {[
-                    ['Room',      room.name],
-                    ['Check-in',  fmtDate(checkIn)],
-                    ['Check-out', fmtDate(checkOut)],
-                    ['Guests',    guests],
-                  ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between">
-                      <span className="text-gray-500">{k}</span>
-                      <span className="font-medium text-deep-blue">{v}</span>
-                    </div>
-                  ))}
-                  {total && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Paid</span>
-                      <span className="font-bold text-emerald-600">{fmtPrice(total, room.currency)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-400">
-                Receipt sent to <strong className="text-gray-600">{email}</strong>
-              </p>
-
-              <button onClick={onClose}
-                className="w-full py-4 bg-terracotta hover:bg-terracotta/90 text-white rounded-2xl font-semibold text-sm transition-colors">
-                Done
+              {/* Back link */}
+              <button
+                type="button"
+                onClick={backToDetails}
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-terracotta transition-colors"
+              >
+                <ChevronLeft size={14} /> Change details
               </button>
+
+              {/* Booking summary pill */}
+              {total && (
+                <div className="flex items-center justify-between bg-[#f9f6f2] rounded-xl px-4 py-3 text-sm">
+                  <span className="text-gray-500">{n} night{n !== 1 ? 's' : ''} · {guests} guest{guests !== 1 ? 's' : ''}</span>
+                  <span className="font-bold text-terracotta">{fmtPrice(total, room.currency)}</span>
+                </div>
+              )}
+
+              {/* Stripe Embedded Checkout */}
+              {clientSecret && stripeInst ? (
+                <div className="rounded-2xl overflow-hidden border border-gray-100">
+                  <EmbeddedCheckoutProvider
+                    stripe={stripeInst}
+                    options={{ clientSecret }}
+                  >
+                    <EmbeddedCheckout />
+                  </EmbeddedCheckoutProvider>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 size={28} className="animate-spin text-terracotta" />
+                </div>
+              )}
+
             </div>
           )}
 
