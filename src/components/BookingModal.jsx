@@ -3,12 +3,12 @@ import {
   X, Users, Check, Loader2, AlertCircle,
   Phone, Mail, User, MessageSquare, Lock,
 } from 'lucide-react'
-import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { supabase } from '@/lib/supabase'
 import CalendarPicker from './CalendarPicker'
 
-const stripePromise = loadStripe((import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '').trim())
+// Stripe.js is loaded lazily — only when the user enters the details step.
+// This prevents the Stripe Developer overlay from appearing on normal page visits.
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -151,8 +151,9 @@ export default function BookingModal({ room, onClose }) {
   const [requests, setRequests] = useState('')
 
   // Step 3 — Payment Intent pre-fetched in background
-  const [clientSecret, setClientSecret] = useState(null)
-  const [piError,      setPiError]      = useState(null)
+  const [clientSecret,  setClientSecret]  = useState(null)
+  const [piError,       setPiError]       = useState(null)
+  const [stripeInst,    setStripeInst]    = useState(null)
 
   // Step 4
   const [confirmed, setConfirmed] = useState(null)
@@ -172,10 +173,17 @@ export default function BookingModal({ room, onClose }) {
       .then(({ data }) => setBookedRanges(data ?? []))
   }, [room.id])
 
-  // ── Pre-create Payment Intent the moment step 2 starts ─────────────────
-  // By the time the user fills their name + email, it's ready → step 3 instant
+  // ── Pre-load Stripe + Payment Intent the moment step 2 starts ──────────
+  // Stripe.js loads in background while the user types their details,
+  // so step 3 (payment form) appears instantly with zero delay.
   useEffect(() => {
     if (step !== 2 || !total || clientSecret) return
+
+    // Lazy-load Stripe only now (not on page load — avoids the dev overlay)
+    import('@stripe/stripe-js').then(({ loadStripe }) => {
+      const p = loadStripe((import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '').trim())
+      setStripeInst(p)
+    })
 
     fetch('/api/create-payment-intent', {
       method:  'POST',
@@ -436,8 +444,8 @@ export default function BookingModal({ room, onClose }) {
           )}
 
           {/* ════ STEP 3 — Payment (instant — clientSecret already ready) ══ */}
-          {step === 3 && clientSecret && (
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+          {step === 3 && clientSecret && stripeInst && (
+            <Elements stripe={stripeInst} options={{ clientSecret, appearance }}>
               <PaymentForm
                 amount={total}
                 currency={room.currency || 'MAD'}
