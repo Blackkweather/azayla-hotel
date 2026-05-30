@@ -180,6 +180,8 @@ export function LanguageProvider({ children }) {
     // International surcharge
     if (currency === 'EUR') return converted + 2
     if (currency === 'USD') return converted + 3
+    if (currency === 'GBP') return converted + 3
+    if (currency === 'AED') return converted + 4
     return converted
   }
 
