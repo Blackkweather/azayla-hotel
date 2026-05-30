@@ -36,7 +36,7 @@ export const translations = {
     'rooms.eyebrow': 'Accommodation',
     'rooms.title': 'Our Rooms',
     'rooms.bookNow': 'Book Now',
-    'rooms.bookOnline': 'Book on Booking.com',
+    'rooms.reserve': 'Reserve This Room',
     'rooms.guests': '{n} guests',
 
     // Gallery
@@ -123,7 +123,7 @@ export const translations = {
     'rooms.eyebrow': 'Hébergement',
     'rooms.title': 'Nos chambres',
     'rooms.bookNow': 'Réserver',
-    'rooms.bookOnline': 'Réserver sur Booking.com',
+    'rooms.reserve': 'Réserver cette chambre',
     'rooms.guests': '{n} personnes',
 
     'gallery.eyebrow': 'Découvrir la région',
@@ -204,7 +204,7 @@ export const translations = {
     'rooms.eyebrow': 'الإقامة',
     'rooms.title': 'غرفنا',
     'rooms.bookNow': 'احجز الآن',
-    'rooms.bookOnline': 'احجز على Booking.com',
+    'rooms.reserve': 'احجز هذه الغرفة',
     'rooms.guests': '{n} ضيوف',
 
     'gallery.eyebrow': 'اكتشف المنطقة',
@@ -285,7 +285,7 @@ export const translations = {
     'rooms.eyebrow': 'Alojamiento',
     'rooms.title': 'Nuestras habitaciones',
     'rooms.bookNow': 'Reservar',
-    'rooms.bookOnline': 'Reservar en Booking.com',
+    'rooms.reserve': 'Reservar esta habitación',
     'rooms.guests': '{n} personas',
 
     'gallery.eyebrow': 'Descubrir la región',
@@ -366,7 +366,7 @@ export const translations = {
     'rooms.eyebrow': 'Accommodatie',
     'rooms.title': 'Onze kamers',
     'rooms.bookNow': 'Nu boeken',
-    'rooms.bookOnline': 'Boek op Booking.com',
+    'rooms.reserve': 'Deze kamer reserveren',
     'rooms.guests': '{n} gasten',
 
     'gallery.eyebrow': 'Ontdek de regio',
@@ -447,7 +447,7 @@ export const translations = {
     'rooms.eyebrow': 'Unterkunft',
     'rooms.title': 'Unsere Zimmer',
     'rooms.bookNow': 'Jetzt buchen',
-    'rooms.bookOnline': 'Auf Booking.com buchen',
+    'rooms.reserve': 'Dieses Zimmer reservieren',
     'rooms.guests': '{n} Gäste',
 
     'gallery.eyebrow': 'Die Region entdecken',
@@ -528,7 +528,7 @@ export const translations = {
     'rooms.eyebrow': 'Alloggio',
     'rooms.title': 'Le nostre camere',
     'rooms.bookNow': 'Prenota ora',
-    'rooms.bookOnline': 'Prenota su Booking.com',
+    'rooms.reserve': 'Prenota questa camera',
     'rooms.guests': '{n} ospiti',
 
     'gallery.eyebrow': 'Scopri la regione',
@@ -609,7 +609,7 @@ export const translations = {
     'rooms.eyebrow': 'Acomodação',
     'rooms.title': 'Nossos quartos',
     'rooms.bookNow': 'Reservar agora',
-    'rooms.bookOnline': 'Reservar no Booking.com',
+    'rooms.reserve': 'Reservar este quarto',
     'rooms.guests': '{n} hóspedes',
 
     'gallery.eyebrow': 'Descubra a região',

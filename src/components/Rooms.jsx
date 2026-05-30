@@ -3,84 +3,30 @@ import { ChevronLeft, ChevronRight, Users, BedDouble, Check } from 'lucide-react
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { useT } from '@/hooks/useT'
+import { supabase } from '@/lib/supabase'
 
-const ROOMS = [
-  {
-    id: 1,
-    name: 'Double Room',
-    subtitle: 'Private Bathroom',
-    badge: 'Private Bath',
-    guests: 2,
-    beds: 'King bed',
-    images: [
-      '/images/rooms/chambre-double-prive/whatsapp-image-2026-05-19-at-09.40.53.jpeg',
-      '/images/rooms/chambre-double-prive/whatsapp-image-2026-05-19-at-09.40.53-1.jpeg',
-      '/images/rooms/chambre-double-prive/whatsapp-image-2026-05-19-at-09.40.53-2.jpeg',
-    ],
-    amenities: ['Private bathroom', 'Free Wi-Fi', 'Air conditioning', 'Flat-screen TV'],
-  },
-  {
-    id: 2,
-    name: 'Double or Twin Room',
-    subtitle: 'Garden View',
-    badge: 'Garden View',
-    guests: 3,
-    beds: 'Single + King bed',
-    images: [
-      '/images/rooms/chambre-double-jumeaux/whatsapp-image-2026-05-19-at-09.46.15.jpeg',
-      '/images/rooms/chambre-double-deluxe/whatsapp-image-2026-05-19-at-09.44.12.jpeg',
-    ],
-    amenities: ['Garden view', 'Free Wi-Fi', 'Air conditioning', 'Private balcony'],
-  },
-  {
-    id: 3,
-    name: 'Deluxe Double Room',
-    subtitle: 'With Extra Bed',
-    badge: 'Deluxe',
-    guests: 3,
-    beds: 'Single + King bed',
-    images: [
-      '/images/rooms/chambre-double-deluxe/whatsapp-image-2026-05-19-at-09.44.11.jpeg',
-      '/images/rooms/chambre-double-deluxe/whatsapp-image-2026-05-19-at-09.44.12-1.jpeg',
-    ],
-    amenities: ['City view', 'Free Wi-Fi', 'Air conditioning', 'Private bathroom'],
-  },
-  {
-    id: 4,
-    name: 'Family Room',
-    subtitle: 'Sleeps up to 4',
-    badge: 'Family',
-    guests: 4,
-    beds: '2 King beds',
-    images: [
-      '/images/rooms/chambre-quadruple/000.jpeg',
-      '/images/rooms/chambre-quadruple/22.jpeg',
-    ],
-    amenities: ['Spacious layout', 'Free Wi-Fi', 'Air conditioning', 'Private shower'],
-  },
-  {
-    id: 5,
-    name: 'Suite with Terrace',
-    subtitle: 'Panoramic Atlantic Views',
-    badge: 'Suite',
-    guests: 2,
-    beds: 'King bed',
-    images: [
-      '/images/rooms/suite-terrasse/whatsapp-image-2026-05-19-at-09.50.35.jpeg',
-      '/images/rooms/suite-terrasse/whatsapp-image-2026-05-19-at-09.50.36.jpeg',
-      '/images/rooms/suite-terrasse/whatsapp-image-2026-05-19-at-09.50.36-1.jpeg',
-      '/images/rooms/suite-terrasse/whatsapp-image-2026-05-19-at-09.50.36-2.jpeg',
-      '/images/rooms/suite-terrasse/whatsapp-image-2026-05-19-at-09.50.36-3.jpeg',
-    ],
-    amenities: ['Private terrace', 'Bedroom & lounge', 'Sofa bed', 'Panoramic view'],
-  },
-]
+// ── Skeleton card shown while loading ────────────────────────────────
+function RoomSkeleton() {
+  return (
+    <div className="bg-white shadow-[0_4px_24px_rgba(27,58,75,0.07)] animate-pulse">
+      <div className="h-72 bg-gray-200" />
+      <div className="p-7 space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-3 bg-gray-200 rounded w-1/2" />
+        <div className="h-3 bg-gray-200 rounded w-full" />
+        <div className="h-3 bg-gray-200 rounded w-5/6" />
+        <div className="h-10 bg-gray-200 rounded mt-4" />
+      </div>
+    </div>
+  )
+}
 
+// ── Single room card ──────────────────────────────────────────────────
 function RoomCard({ room }) {
   const [current, setCurrent] = useState(0)
   const [hovered, setHovered] = useState(false)
-  const total = room.images.length
   const t = useT()
+  const total = room.images?.length ?? 0
 
   const next = useCallback(() => setCurrent(c => (c + 1) % total), [total])
   const prev = useCallback(() => setCurrent(c => (c - 1 + total) % total), [total])
@@ -91,15 +37,19 @@ function RoomCard({ room }) {
     return () => clearInterval(timer)
   }, [hovered, next, total])
 
+  const formattedPrice = room.price_per_night
+    ? new Intl.NumberFormat('fr-MA', { style: 'decimal', maximumFractionDigits: 0 }).format(room.price_per_night)
+    : null
+
   return (
     <div
       className="group bg-white flex flex-col shadow-[0_4px_24px_rgba(27,58,75,0.07)] hover:shadow-[0_16px_48px_rgba(27,58,75,0.16)] transition-all duration-500"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Image */}
+      {/* ── Images ── */}
       <div className="relative overflow-hidden h-72">
-        {room.images.map((src, i) => (
+        {room.images?.map((src, i) => (
           <img
             key={src}
             src={src}
@@ -113,17 +63,12 @@ function RoomCard({ room }) {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-[1] pointer-events-none" />
 
-        <div className="absolute inset-0 z-[2] flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-400">
-          <a
-            href="https://www.booking.com/hotel/ma/azayla-asilah.fr.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="border border-white text-white text-[0.65rem] uppercase tracking-[3px] px-7 py-2.5 hover:bg-white hover:text-deep-blue transition-colors duration-300"
-            onClick={e => e.stopPropagation()}
-          >
-            {t('rooms.bookNow')}
-          </a>
-        </div>
+        {/* Price pill overlay */}
+        {formattedPrice && (
+          <div className="absolute bottom-4 right-4 z-[3] bg-deep-blue/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide">
+            {formattedPrice} {room.currency}<span className="text-white/60 font-normal"> / night</span>
+          </div>
+        )}
 
         <Badge className="absolute top-4 left-4 z-[3]">{room.badge}</Badge>
 
@@ -162,7 +107,7 @@ function RoomCard({ room }) {
         )}
       </div>
 
-      {/* Info panel */}
+      {/* ── Info panel ── */}
       <div className="flex flex-col flex-1 p-7">
         <div className="flex items-center gap-2 mb-4">
           <div className="h-px w-6 bg-gold" />
@@ -174,7 +119,7 @@ function RoomCard({ room }) {
         </h3>
         <p className="text-[0.7rem] text-terracotta uppercase tracking-widest mb-4">{room.subtitle}</p>
 
-        <div className="flex gap-5 mb-5 pb-5 border-b border-gray-100">
+        <div className="flex gap-5 mb-4 pb-4 border-b border-gray-100">
           <span className="flex items-center gap-1.5 text-xs text-gray-400 uppercase tracking-wide">
             <BedDouble size={14} className="text-terracotta" />
             {room.beds}
@@ -185,8 +130,16 @@ function RoomCard({ room }) {
           </span>
         </div>
 
-        <ul className="grid grid-cols-2 gap-y-2 gap-x-3 mb-6 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-in-out">
-          {room.amenities.map(a => (
+        {/* Description */}
+        {room.description && (
+          <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-3">
+            {room.description}
+          </p>
+        )}
+
+        {/* Amenities (visible on hover) */}
+        <ul className="grid grid-cols-2 gap-y-2 gap-x-3 mb-5 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-in-out">
+          {room.amenities?.map(a => (
             <li key={a} className="flex items-center gap-1.5 text-[0.8rem] text-gray-500">
               <Check size={11} className="text-gold shrink-0" />
               {a}
@@ -196,9 +149,7 @@ function RoomCard({ room }) {
 
         <div className="mt-auto">
           <Button asChild className="w-full rounded-none tracking-widest text-xs uppercase">
-            <a href="https://www.booking.com/hotel/ma/azayla-asilah.fr.html" target="_blank" rel="noopener noreferrer">
-              {t('rooms.bookOnline')}
-            </a>
+            <a href="#contact">{t('rooms.reserve')}</a>
           </Button>
         </div>
       </div>
@@ -206,8 +157,24 @@ function RoomCard({ room }) {
   )
 }
 
+// ── Section ───────────────────────────────────────────────────────────
 export default function Rooms() {
+  const [rooms, setRooms] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const t = useT()
+
+  useEffect(() => {
+    supabase
+      .from('rooms')
+      .select('*')
+      .order('display_order')
+      .then(({ data, error }) => {
+        if (error) setError(error.message)
+        else setRooms(data ?? [])
+        setLoading(false)
+      })
+  }, [])
 
   return (
     <section id="rooms" className="py-28 px-6 max-w-6xl mx-auto">
@@ -215,8 +182,16 @@ export default function Rooms() {
         <p className="eyebrow mb-3">{t('rooms.eyebrow')}</p>
         <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('rooms.title')}</h2>
       </div>
+
+      {error && (
+        <p className="text-center text-terracotta text-sm mb-8">Could not load rooms. Please refresh.</p>
+      )}
+
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {ROOMS.map(room => <RoomCard key={room.id} room={room} />)}
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => <RoomSkeleton key={i} />)
+          : rooms.map(room => <RoomCard key={room.id} room={room} />)
+        }
       </div>
     </section>
   )
