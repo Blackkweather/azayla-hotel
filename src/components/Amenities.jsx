@@ -1,9 +1,10 @@
 import { Check } from 'lucide-react'
 import { Card, CardContent } from './ui/card'
+import { useT } from '@/hooks/useT'
 
 const CATEGORIES = [
   {
-    title: 'Accommodation',
+    titleKey: 'amenities.cat.accommodation',
     color: 'bg-deep-blue',
     icon: (
       <svg className="w-9 h-9 mb-3" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -16,7 +17,7 @@ const CATEGORIES = [
     items: ['Air conditioning', 'Private bathrooms', 'Flat-screen TV', 'Daily housekeeping'],
   },
   {
-    title: 'Nearby Restaurants',
+    titleKey: 'amenities.cat.restaurants',
     color: 'bg-terracotta',
     icon: (
       <svg className="w-9 h-9 mb-3" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -34,7 +35,7 @@ const CATEGORIES = [
     ],
   },
   {
-    title: 'Services',
+    titleKey: 'amenities.cat.services',
     color: 'bg-gold',
     icon: (
       <svg className="w-9 h-9 mb-3" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -45,7 +46,7 @@ const CATEGORIES = [
     items: ['Free high-speed Wi-Fi', '24-hour reception', 'Airport shuttle', 'Concierge service'],
   },
   {
-    title: 'Location',
+    titleKey: 'amenities.cat.location',
     color: 'bg-[#2d6a4f]',
     icon: (
       <svg className="w-9 h-9 mb-3" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -56,32 +57,32 @@ const CATEGORIES = [
     items: [
       '100m from Plage de Asilah',
       'Heart of the Medina',
-      "Steps from Atlantic ramparts",
+      'Steps from Atlantic ramparts',
       '45 min to Tangier Airport',
     ],
   },
 ]
 
 export default function Amenities() {
+  const t = useT()
+
   return (
     <section id="amenities" className="py-24 px-6 bg-[#f9f6f2]">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <p className="eyebrow mb-3">What We Offer</p>
-          <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">Hotel Amenities</h2>
+          <p className="eyebrow mb-3">{t('amenities.eyebrow')}</p>
+          <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('amenities.title')}</h2>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {CATEGORIES.map(cat => (
-            <Card key={cat.title} className="overflow-hidden hover:-translate-y-1 transition-transform duration-300">
-              {/* Header */}
+            <Card key={cat.titleKey} className="overflow-hidden hover:-translate-y-1 transition-transform duration-300">
               <div className={`${cat.color} text-white p-6 text-center`}>
                 {cat.icon}
-                <h3 className="font-cormorant text-xl font-semibold">{cat.title}</h3>
+                <h3 className="font-cormorant text-xl font-semibold">{t(cat.titleKey)}</h3>
                 <div className="h-px bg-white/25 mt-3 rounded" />
               </div>
 
-              {/* Items */}
               <CardContent className="pt-4">
                 <ul className="space-y-2.5">
                   {cat.items.map(item => (

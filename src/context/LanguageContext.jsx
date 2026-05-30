@@ -36,6 +36,11 @@ export function LanguageProvider({ children }) {
       })
   }, [])
 
+  useEffect(() => {
+    document.documentElement.lang = lang
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
+  }, [lang])
+
   function setLang(l) {
     localStorage.setItem('azayla-lang', l)
     setLangState(l)

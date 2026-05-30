@@ -1,27 +1,30 @@
 import { MapPin, Clock, Phone } from 'lucide-react'
 import { Card } from './ui/card'
-
-const INFO = [
-  {
-    icon: <MapPin size={18} className="text-terracotta shrink-0 mt-0.5" />,
-    text: '20 Rue Ibn Rochd, Asilah 90050, Maroc',
-  },
-  {
-    icon: <Clock size={18} className="text-terracotta shrink-0 mt-0.5" />,
-    text: 'Check-in: 14:00  ·  Check-out: 11:00',
-  },
-  {
-    icon: <Phone size={18} className="text-terracotta shrink-0 mt-0.5" />,
-    text: '+212 539-416717',
-  },
-]
+import { useT } from '@/hooks/useT'
 
 export default function Location() {
+  const t = useT()
+
+  const INFO = [
+    {
+      icon: <MapPin size={18} className="text-terracotta shrink-0 mt-0.5" />,
+      text: '20 Rue Ibn Rochd, Asilah 90050, Maroc',
+    },
+    {
+      icon: <Clock size={18} className="text-terracotta shrink-0 mt-0.5" />,
+      text: 'Check-in: 14:00  ·  Check-out: 11:00',
+    },
+    {
+      icon: <Phone size={18} className="text-terracotta shrink-0 mt-0.5" />,
+      text: '+212 539-416717',
+    },
+  ]
+
   return (
     <section id="location" className="py-24 px-6 max-w-6xl mx-auto">
       <div className="text-center mb-14">
-        <p className="eyebrow mb-3">Find Us</p>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">Location</h2>
+        <p className="eyebrow mb-3">{t('location.eyebrow')}</p>
+        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('location.title')}</h2>
       </div>
 
       <div className="rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.1)] mb-8">

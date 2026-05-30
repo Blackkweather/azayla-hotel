@@ -4,14 +4,15 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { X, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUserLanguage } from '@/hooks/useUserLanguage'
+import { useT } from '@/hooks/useT'
 
 const CATEGORIES = [
-  { value: 'all', label: 'All' },
-  { value: 'medina', label: 'Medina' },
-  { value: 'port', label: 'Port' },
-  { value: 'beach', label: 'Beach' },
-  { value: 'lixus', label: 'Lixus' },
-  { value: 'tangier', label: 'Tangier' },
+  { value: 'all',     key: 'gallery.cat.all' },
+  { value: 'medina',  key: 'gallery.cat.medina' },
+  { value: 'port',    key: 'gallery.cat.port' },
+  { value: 'beach',   key: 'gallery.cat.beach' },
+  { value: 'lixus',   key: 'gallery.cat.lixus' },
+  { value: 'tangier', key: 'gallery.cat.tangier' },
 ]
 
 const IMAGES = [
@@ -372,14 +373,15 @@ const IMAGES = [
 export default function Gallery() {
   const [lightbox, setLightbox] = useState(null)
   const lang = useUserLanguage()
+  const t = useT()
 
   const getLocation = img => img.location[lang] || img.location.en
 
   return (
     <section id="gallery" className="py-24 px-6 max-w-6xl mx-auto">
       <div className="text-center mb-12">
-        <p className="eyebrow mb-3">Discover the Region</p>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">Gallery</h2>
+        <p className="eyebrow mb-3">{t('gallery.eyebrow')}</p>
+        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('gallery.title')}</h2>
       </div>
 
       <Tabs.Root defaultValue="all">
@@ -395,7 +397,7 @@ export default function Gallery() {
                 'data-[state=active]:bg-terracotta data-[state=active]:border-terracotta data-[state=active]:text-white'
               )}
             >
-              {cat.label}
+              {t(cat.key)}
             </Tabs.Trigger>
           ))}
         </Tabs.List>

@@ -2,14 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import { Menu, X, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/context/LanguageContext'
+import { useT } from '@/hooks/useT'
 
-const NAV_LINKS = [
-  { href: '#about', label: 'About' },
-  { href: '#rooms', label: 'Rooms' },
-  { href: '#gallery', label: 'Gallery' },
-  { href: '#amenities', label: 'Amenities' },
-  { href: '#location', label: 'Location' },
-  { href: '#contact', label: 'Contact' },
+const NAV_KEYS = [
+  { href: '#about',     key: 'nav.about' },
+  { href: '#rooms',     key: 'nav.rooms' },
+  { href: '#gallery',   key: 'nav.gallery' },
+  { href: '#amenities', key: 'nav.amenities' },
+  { href: '#location',  key: 'nav.location' },
+  { href: '#contact',   key: 'nav.contact' },
 ]
 
 const LANGUAGES = [
@@ -29,6 +30,7 @@ export default function Navbar() {
   const [langOpen, setLangOpen] = useState(false)
   const langRef = useRef(null)
   const { lang, setLang } = useLanguage()
+  const t = useT()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -71,7 +73,7 @@ export default function Navbar() {
 
       {/* Desktop */}
       <ul className="hidden md:flex gap-8 list-none m-0 p-0 items-center">
-        {NAV_LINKS.map(({ href, label }) => (
+        {NAV_KEYS.map(({ href, key }) => (
           <li key={href}>
             <a
               href={href}
@@ -80,7 +82,7 @@ export default function Navbar() {
                 textColor
               )}
             >
-              {label}
+              {t(key)}
             </a>
           </li>
         ))}
@@ -135,18 +137,18 @@ export default function Navbar() {
       {/* Mobile menu */}
       {open && (
         <div className="absolute top-full left-0 w-full bg-white shadow-xl py-6 flex flex-col items-center gap-5 md:hidden">
-          {NAV_LINKS.map(({ href, label }) => (
+          {NAV_KEYS.map(({ href, key }) => (
             <a
               key={href}
               href={href}
               onClick={() => setOpen(false)}
               className="text-deep-blue font-semibold hover:text-terracotta transition-colors text-base"
             >
-              {label}
+              {t(key)}
             </a>
           ))}
 
-          {/* Language row in mobile menu */}
+          {/* Language pills */}
           <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-black/5 w-full px-6">
             {LANGUAGES.map(({ code, label }) => (
               <button

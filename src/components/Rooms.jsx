@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, Users, BedDouble, Check } from 'lucide-react'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
+import { useT } from '@/hooks/useT'
 
 const ROOMS = [
   {
@@ -79,14 +80,15 @@ function RoomCard({ room }) {
   const [current, setCurrent] = useState(0)
   const [hovered, setHovered] = useState(false)
   const total = room.images.length
+  const t = useT()
 
   const next = useCallback(() => setCurrent(c => (c + 1) % total), [total])
   const prev = useCallback(() => setCurrent(c => (c - 1 + total) % total), [total])
 
   useEffect(() => {
     if (hovered || total <= 1) return
-    const t = setInterval(next, 5000)
-    return () => clearInterval(t)
+    const timer = setInterval(next, 5000)
+    return () => clearInterval(timer)
   }, [hovered, next, total])
 
   return (
@@ -95,7 +97,7 @@ function RoomCard({ room }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* ── Image ── */}
+      {/* Image */}
       <div className="relative overflow-hidden h-72">
         {room.images.map((src, i) => (
           <img
@@ -111,7 +113,6 @@ function RoomCard({ room }) {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-[1] pointer-events-none" />
 
-        {/* Hover overlay */}
         <div className="absolute inset-0 z-[2] flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-400">
           <a
             href="https://www.booking.com/hotel/ma/azayla-asilah.fr.html"
@@ -120,7 +121,7 @@ function RoomCard({ room }) {
             className="border border-white text-white text-[0.65rem] uppercase tracking-[3px] px-7 py-2.5 hover:bg-white hover:text-deep-blue transition-colors duration-300"
             onClick={e => e.stopPropagation()}
           >
-            Book Now
+            {t('rooms.bookNow')}
           </a>
         </div>
 
@@ -161,7 +162,7 @@ function RoomCard({ room }) {
         )}
       </div>
 
-      {/* ── Info panel ── */}
+      {/* Info panel */}
       <div className="flex flex-col flex-1 p-7">
         <div className="flex items-center gap-2 mb-4">
           <div className="h-px w-6 bg-gold" />
@@ -180,7 +181,7 @@ function RoomCard({ room }) {
           </span>
           <span className="flex items-center gap-1.5 text-xs text-gray-400 uppercase tracking-wide">
             <Users size={14} className="text-terracotta" />
-            {room.guests} guests
+            {t('rooms.guests', { n: room.guests })}
           </span>
         </div>
 
@@ -195,7 +196,9 @@ function RoomCard({ room }) {
 
         <div className="mt-auto">
           <Button asChild className="w-full rounded-none tracking-widest text-xs uppercase">
-            <a href="https://www.booking.com/hotel/ma/azayla-asilah.fr.html" target="_blank" rel="noopener noreferrer">Book on Booking.com</a>
+            <a href="https://www.booking.com/hotel/ma/azayla-asilah.fr.html" target="_blank" rel="noopener noreferrer">
+              {t('rooms.bookOnline')}
+            </a>
           </Button>
         </div>
       </div>
@@ -204,11 +207,13 @@ function RoomCard({ room }) {
 }
 
 export default function Rooms() {
+  const t = useT()
+
   return (
     <section id="rooms" className="py-28 px-6 max-w-6xl mx-auto">
       <div className="text-center mb-16">
-        <p className="eyebrow mb-3">Accommodation</p>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">Our Rooms</h2>
+        <p className="eyebrow mb-3">{t('rooms.eyebrow')}</p>
+        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('rooms.title')}</h2>
       </div>
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
         {ROOMS.map(room => <RoomCard key={room.id} room={room} />)}
