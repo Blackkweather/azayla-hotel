@@ -14,10 +14,10 @@ export default async function handler(req, res) {
 
   const stripe = new Stripe(secret, { apiVersion: '2024-06-20' })
 
-  const { amount, currency, booking_ref, room_name, guest_email, guest_name } = req.body
+  const { amount, currency, room_name, guest_email, guest_name } = req.body
 
-  if (!amount || !currency || !booking_ref) {
-    return res.status(400).json({ error: 'Missing required fields' })
+  if (!amount || !currency) {
+    return res.status(400).json({ error: 'Missing required fields: amount, currency' })
   }
 
   try {
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     const intent = await stripe.paymentIntents.create({
       amount:   amountInt,
       currency: currency.toLowerCase().trim(),
-      metadata: { booking_ref, room_name, guest_name: guest_name || '' },
+      metadata: { room_name: room_name || '', guest_name: guest_name || '' },
       receipt_email: guest_email || undefined,
       automatic_payment_methods: { enabled: true },
     })
