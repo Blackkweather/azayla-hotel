@@ -176,7 +176,11 @@ export function LanguageProvider({ children }) {
   function getAmount(madAmount) {
     if (!madAmount && madAmount !== 0) return 0
     if (currency === 'MAD' || !rates[currency]) return Math.round(Number(madAmount))
-    return Math.ceil(Number(madAmount) * rates[currency])
+    const converted = Math.ceil(Number(madAmount) * rates[currency])
+    // International surcharge
+    if (currency === 'EUR') return converted + 2
+    if (currency === 'USD') return converted + 3
+    return converted
   }
 
   /**
