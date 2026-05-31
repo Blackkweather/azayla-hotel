@@ -20,14 +20,14 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-deep-blue text-white/70 pt-16 pb-8 px-6">
+    <footer className="bg-deep-blue text-white/70 pt-12 sm:pt-16 pb-8 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-12 pb-12 border-b border-white/10">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-12 pb-10 sm:pb-12 border-b border-white/10">
 
           {/* Brand */}
           <div>
             <a href="#hero" className="inline-block mb-3">
-              <img src="/logo-removebg-preview.png" alt="Azayla Hotel" className="h-[100px] w-auto object-contain brightness-0 invert" />
+              <img src="/logo-removebg-preview.png" alt="Azayla Hotel" className="h-16 sm:h-24 w-auto object-contain brightness-0 invert" />
             </a>
             <p className="text-sm leading-relaxed text-white/55 max-w-[260px]">
               {t('footer.tagline')}

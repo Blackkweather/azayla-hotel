@@ -182,10 +182,10 @@ export default function Rooms() {
   }, [])
 
   return (
-    <section id="rooms" className="py-28 px-6 max-w-6xl mx-auto">
-      <div className="text-center mb-16">
+    <section id="rooms" className="py-16 sm:py-28 px-4 sm:px-6 max-w-6xl mx-auto">
+      <div className="text-center mb-12 sm:mb-16">
         <p className="eyebrow mb-3">{t('rooms.eyebrow')}</p>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('rooms.title')}</h2>
+        <h2 className="font-cormorant text-[2rem] sm:text-[2.8rem] text-deep-blue section-underline">{t('rooms.title')}</h2>
       </div>
 
       {error && (

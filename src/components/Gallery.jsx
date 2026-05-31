@@ -378,10 +378,10 @@ export default function Gallery() {
   const getLocation = img => img.location[lang] || img.location.en
 
   return (
-    <section id="gallery" className="py-24 px-6 max-w-6xl mx-auto">
-      <div className="text-center mb-12">
+    <section id="gallery" className="py-16 sm:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+      <div className="text-center mb-10 sm:mb-12">
         <p className="eyebrow mb-3">{t('gallery.eyebrow')}</p>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('gallery.title')}</h2>
+        <h2 className="font-cormorant text-[2rem] sm:text-[2.8rem] text-deep-blue section-underline">{t('gallery.title')}</h2>
       </div>
 
       <Tabs.Root defaultValue="all">

@@ -67,11 +67,11 @@ export default function Amenities() {
   const t = useT()
 
   return (
-    <section id="amenities" className="py-24 px-6 bg-[#f9f6f2]">
+    <section id="amenities" className="py-16 sm:py-24 px-4 sm:px-6 bg-[#f9f6f2]">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 sm:mb-16">
           <p className="eyebrow mb-3">{t('amenities.eyebrow')}</p>
-          <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('amenities.title')}</h2>
+          <h2 className="font-cormorant text-[2rem] sm:text-[2.8rem] text-deep-blue section-underline">{t('amenities.title')}</h2>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -32,11 +32,11 @@ export default function Reviews() {
   const t = useT()
 
   return (
-    <section id="reviews" className="py-24 px-6 bg-sand">
+    <section id="reviews" className="py-16 sm:py-24 px-4 sm:px-6 bg-sand">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 sm:mb-16">
           <p className="eyebrow mb-3">{t('reviews.eyebrow')}</p>
-          <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('reviews.title')}</h2>
+          <h2 className="font-cormorant text-[2rem] sm:text-[2.8rem] text-deep-blue section-underline">{t('reviews.title')}</h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-7">

@@ -59,7 +59,7 @@ export default function Navbar() {
   return (
     <nav
       className={cn(
-        'fixed top-0 w-full z-[1000] flex justify-between items-center px-6 py-4 transition-all duration-300',
+        'fixed top-0 w-full z-[1000] flex justify-between items-center px-4 sm:px-6 py-2 sm:py-4 transition-all duration-300',
         scrolled ? 'bg-white/98 shadow-sm backdrop-blur-sm' : 'bg-transparent'
       )}
     >
@@ -67,7 +67,7 @@ export default function Navbar() {
         <img
           src="/logo-removebg-preview.png"
           alt="Azayla Hotel"
-          className="h-[100px] w-auto object-contain drop-shadow-sm"
+          className="h-14 sm:h-[100px] w-auto object-contain drop-shadow-sm"
         />
       </a>
 

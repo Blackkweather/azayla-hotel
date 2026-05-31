@@ -44,9 +44,9 @@ export default function Hero() {
       <a
         href="#about"
         aria-label="Scroll down"
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/60 text-[0.65rem] uppercase tracking-[2px] no-underline hover:text-white/90 transition-colors animate-bounce"
+        className="absolute bottom-8 sm:bottom-10 left-0 right-0 mx-auto w-max flex flex-col items-center gap-1 text-white/60 text-[0.65rem] uppercase tracking-[2px] no-underline hover:text-white/90 transition-colors animate-bounce"
       >
-        <span>{t('hero.discover')}</span>
+        <span className="whitespace-nowrap">{t('hero.discover')}</span>
         <ChevronDown size={20} />
       </a>
     </section>

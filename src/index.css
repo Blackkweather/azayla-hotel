@@ -5,12 +5,18 @@
 @tailwind utilities;
 
 @layer base {
-  html { scroll-behavior: smooth; }
+  /* overflow-x on BOTH html + body — required for iOS Safari to block horizontal scroll */
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
   body {
     font-family: 'Nunito Sans', sans-serif;
     color: #1b3a4b;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    /* Prevent horizontal overscroll on iOS */
+    overscroll-behavior-x: none;
   }
   h1, h2, h3, h4 {
     font-family: 'Cormorant Garamond', serif;

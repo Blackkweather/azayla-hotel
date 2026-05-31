@@ -35,10 +35,10 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="py-24 px-6 max-w-4xl mx-auto">
-      <div className="text-center mb-14">
+    <section id="contact" className="py-16 sm:py-24 px-4 sm:px-6 max-w-4xl mx-auto">
+      <div className="text-center mb-10 sm:mb-14">
         <p className="eyebrow mb-3">{t('contact.eyebrow')}</p>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('contact.title')}</h2>
+        <h2 className="font-cormorant text-[2rem] sm:text-[2.8rem] text-deep-blue section-underline">{t('contact.title')}</h2>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4 mb-12 max-w-md mx-auto">

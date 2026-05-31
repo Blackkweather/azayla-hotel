@@ -32,30 +32,32 @@ export default function About() {
   const t = useT()
 
   return (
-    <section id="about" className="py-24 px-6 max-w-6xl mx-auto">
-      <div className="text-center mb-16 scrolled-fade" ref={ref}>
+    <section id="about" className="py-16 sm:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+      <div className="text-center mb-12 sm:mb-16 scrolled-fade" ref={ref}>
         <p className="eyebrow mb-3">{t('about.eyebrow')}</p>
-        <h2 className="font-cormorant text-[2.8rem] text-deep-blue section-underline">{t('about.title')}</h2>
+        <h2 className="font-cormorant text-[2rem] sm:text-[2.8rem] text-deep-blue section-underline">{t('about.title')}</h2>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-16 items-center">
+      <div className="grid md:grid-cols-2 gap-10 sm:gap-16 items-center">
         <div>
-          <p className="text-[1.1rem] text-deep-blue/80 leading-relaxed mb-5">
+          <p className="text-[1rem] sm:text-[1.1rem] text-deep-blue/80 leading-relaxed mb-5">
             {t('about.p1')}
           </p>
-          <p className="text-[1.1rem] text-deep-blue/80 leading-relaxed mb-8">
+          <p className="text-[1rem] sm:text-[1.1rem] text-deep-blue/80 leading-relaxed mb-8">
             {t('about.p2')}
           </p>
 
-          <div className="grid grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6">
             {HIGHLIGHTS.map(h => (
               <div
                 key={h.titleKey}
-                className="text-center p-5 bg-white rounded-xl border border-gray-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+                className="flex sm:flex-col items-center sm:items-center gap-4 sm:gap-0 text-left sm:text-center p-4 sm:p-5 bg-white rounded-xl border border-gray-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300"
               >
-                {h.icon}
-                <h3 className="font-cormorant font-semibold text-deep-blue text-lg mb-1">{t(h.titleKey)}</h3>
-                <p className="text-sm text-gray-500">{t(h.descKey)}</p>
+                <div className="shrink-0">{h.icon}</div>
+                <div>
+                  <h3 className="font-cormorant font-semibold text-deep-blue text-lg mb-0.5">{t(h.titleKey)}</h3>
+                  <p className="text-sm text-gray-500">{t(h.descKey)}</p>
+                </div>
               </div>
             ))}
           </div>
