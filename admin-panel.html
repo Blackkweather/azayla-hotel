@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Azayla Hotel — Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'deep-blue': '#1b3a4b',
+          'terracotta': '#c1714f',
+          'gold': '#d4a849',
+        },
+        fontFamily: {
+          cormorant: ['"Cormorant Garamond"', 'serif'],
+        }
+      }
+    }
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Nunito Sans', sans-serif; background: #f7f6f3; }
+  .font-cormorant { font-family: 'Cormorant Garamond', serif; }
+  .status-live { background:#10b981;color:#fff; }
+  .status-hidden { background:rgba(31,41,55,0.7);color:#d1d5db; }
+  .badge-pending { background:#fef3c7;color:#b45309;border:1px solid #fde68a; }
+  .badge-confirmed { background:#d1fae5;color:#065f46;border:1px solid #a7f3d0; }
+  .badge-cancelled { background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb; }
+  .tab-active { background:#1b3a4b;color:#fff;border-color:#1b3a4b; }
+  .tab-inactive { background:#fff;color:#6b7280;border-color:#e5e7eb; }
+  .booking-card { transition: all .2s; }
+  .booking-details { display:none; }
+  .booking-details.open { display:block; }
+</style>
+</head>
+<body class="min-h-screen pb-8">
+
+<!-- Header -->
+<header style="background:#1b3a4b" class="shadow-lg sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="border-l border-white/10 pl-3">
+        <p class="font-cormorant text-white text-lg font-semibold leading-none">Dashboard</p>
+        <p class="text-white/40 text-xs mt-0.5 hidden sm:block">admin@azayla.hotel</p>
+      </div>
+    </div>
+    <a href="https://azayla-hotel-clone.vercel.app" target="_blank"
+       class="flex items-center gap-1.5 text-white/50 hover:text-white/90 text-xs transition-colors px-2 py-1.5 rounded-lg hover:bg-white/5">
+      ↗ <span class="hidden sm:inline">View site</span>
+    </a>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-6">
+    <button onclick="showTab('rooms')" id="tab-rooms"
+      class="tab-active flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-colors">
+      ▦ Rooms
+    </button>
+    <button onclick="showTab('bookings')" id="tab-bookings"
+      class="tab-inactive relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-colors">
+      📅 Reservations
+      <span class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full text-white text-[0.6rem] font-bold" style="background:#c1714f">2</span>
+    </button>
+  </div>
+
+  <!-- Rooms Tab -->
+  <div id="panel-rooms">
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 sm:px-7 py-4 sm:py-5">
+        <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Total Rooms</p>
+        <p class="font-cormorant text-5xl font-bold leading-none" style="color:#1b3a4b">6</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 sm:px-7 py-4 sm:py-5">
+        <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Live</p>
+        <p class="font-cormorant text-5xl font-bold leading-none text-emerald-600">5</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 sm:px-7 py-4 sm:py-5">
+        <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Hidden</p>
+        <p class="font-cormorant text-5xl font-bold leading-none" style="color:#c1714f">1</p>
+      </div>
+    </div>
+
+    <!-- Section header -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="font-cormorant text-2xl font-bold flex items-center gap-2" style="color:#1b3a4b">
+          ▦ <span style="color:#c1714f">◆</span> Room Catalog
+        </h2>
+        <p class="text-xs text-gray-400 mt-0.5">Tap a card to edit · changes go live instantly</p>
+      </div>
+      <button class="hidden sm:flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-semibold shadow-sm" style="background:#c1714f">
+        + Add Room
+      </button>
+    </div>
+
+    <!-- Room Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5" id="room-grid"></div>
+  </div>
+
+  <!-- Bookings Tab -->
+  <div id="panel-bookings" class="hidden">
+    <div class="flex gap-2 mb-6 flex-wrap" id="booking-filters">
+      <button onclick="filterBookings('all')" data-filter="all"
+        class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold border tab-active">
+        All <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[0.6rem] font-bold bg-white/20 text-white">5</span>
+      </button>
+      <button onclick="filterBookings('pending')" data-filter="pending"
+        class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold border tab-inactive">
+        Pending <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[0.6rem] font-bold bg-gray-100 text-gray-500">2</span>
+      </button>
+      <button onclick="filterBookings('confirmed')" data-filter="confirmed"
+        class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold border tab-inactive">
+        Confirmed <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[0.6rem] font-bold bg-gray-100 text-gray-500">2</span>
+      </button>
+      <button onclick="filterBookings('cancelled')" data-filter="cancelled"
+        class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold border tab-inactive">
+        Cancelled <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[0.6rem] font-bold bg-gray-100 text-gray-500">1</span>
+      </button>
+    </div>
+    <div id="bookings-list" class="space-y-3"></div>
+  </div>
+
+</main>
+
+<script>
+const ROOMS = [
+  { id:1, name:'Suite Terrasse', subtitle:'Terrace Suite with Sea View', beds:'King bed', guests:2, price:1800, currency:'MAD', live:true, photos:1, img:'images/rooms/suite-terrasse/whatsapp-image-2026-05-19-at-09.50.35.jpeg' },
+  { id:2, name:'Chambre Double Deluxe', subtitle:'Deluxe Double Room', beds:'Queen bed', guests:2, price:1100, currency:'MAD', live:true, photos:3, img:'images/rooms/chambre-double-deluxe/whatsapp-image-2026-05-19-at-09.44.11.jpeg' },
+  { id:3, name:'Chambre Double Privé', subtitle:'Private Double Room', beds:'Double bed', guests:2, price:950, currency:'MAD', live:true, photos:3, img:'images/rooms/chambre-double-prive/whatsapp-image-2026-05-19-at-09.40.53.jpeg' },
+  { id:4, name:'Chambre Double Jumeaux', subtitle:'Twin Double Room', beds:'2 single beds', guests:2, price:900, currency:'MAD', live:true, photos:2, img:'images/rooms/chambre-double-jumeaux/whatsapp-image-2026-05-19-at-09.46.15.jpeg' },
+  { id:5, name:'Chambre Quadruple', subtitle:'Family Quadruple Room', beds:'2 double beds', guests:4, price:1400, currency:'MAD', live:true, photos:2, img:'images/rooms/chambre-quadruple/000.jpeg' },
+  { id:6, name:'Chambre Standard', subtitle:'Cozy Standard Room', beds:'Double bed', guests:2, price:750, currency:'MAD', live:false, photos:1, img:'images/rooms/chambre-double-prive/whatsapp-image-2026-05-19-at-09.40.53-1.jpeg' },
+];
+
+const BOOKINGS = [
+  { id:'b1', ref:'AZL-2847', name:'Sophie Martin', email:'sophie.martin@gmail.com', phone:'+33 6 12 34 56 78', room:'Suite Terrasse', cin:'2026-06-10', cout:'2026-06-14', guests:2, total:7200, currency:'MAD', status:'confirmed', note:'Late check-in requested (after 22:00). Champagne in room for anniversary.', created:'20 May' },
+  { id:'b2', ref:'AZL-2848', name:'James Okafor', email:'j.okafor@outlook.com', phone:'+44 7700 900123', room:'Chambre Double Deluxe', cin:'2026-06-12', cout:'2026-06-15', guests:2, total:3300, currency:'MAD', status:'pending', note:'', created:'28 May' },
+  { id:'b3', ref:'AZL-2849', name:'Amina Benali', email:'amina.benali@hotmail.com', phone:'+212 661 234 567', room:'Chambre Quadruple', cin:'2026-06-20', cout:'2026-06-27', guests:4, total:9800, currency:'MAD', status:'pending', note:'Baby cot needed. Prefer a room away from the street.', created:'30 May' },
+  { id:'b4', ref:'AZL-2845', name:'Carlos Ruiz', email:'c.ruiz@empresa.es', phone:'+34 612 345 678', room:'Chambre Double Privé', cin:'2026-05-28', cout:'2026-05-31', guests:2, total:2850, currency:'MAD', status:'confirmed', note:'', created:'10 May' },
+  { id:'b5', ref:'AZL-2841', name:'Emma Dupont', email:'emma.dupont@free.fr', phone:'+33 7 98 76 54 32', room:'Chambre Standard', cin:'2026-05-15', cout:'2026-05-17', guests:1, total:1500, currency:'MAD', status:'cancelled', note:'', created:'1 May' },
+];
+
+function nights(ci, co) {
+  return Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000));
+}
+
+function fmtDate(d) {
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function renderRooms() {
+  document.getElementById('room-grid').innerHTML = ROOMS.map(r => `
+    <div class="bg-white rounded-2xl shadow-sm border overflow-hidden ${r.live ? 'border-gray-100' : 'border-dashed border-gray-200 opacity-60'}">
+      <div class="relative h-44 sm:h-48 bg-gray-100">
+        <img src="${r.img}" alt="${r.name}" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(0,0,0,0.4),transparent)"></div>
+        <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${r.live ? 'status-live' : 'status-hidden'}">${r.live ? 'Live' : 'Hidden'}</span>
+        <span class="absolute bottom-3 right-3 text-white text-xs px-2 py-1 rounded-full" style="background:rgba(0,0,0,0.5)">${r.photos} photo${r.photos !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="p-4 sm:p-5">
+        <div class="flex items-start justify-between gap-2 mb-1">
+          <h3 class="font-cormorant text-lg font-semibold leading-tight" style="color:#1b3a4b">${r.name}</h3>
+          <span class="text-sm font-bold whitespace-nowrap shrink-0" style="color:#c1714f">${r.price.toLocaleString()} ${r.currency}</span>
+        </div>
+        <p class="text-xs uppercase tracking-wider mb-2" style="color:#c1714f;opacity:.8">${r.subtitle}</p>
+        <div class="flex gap-4 mb-3 text-xs text-gray-400">
+          <span>🛏 ${r.beds}</span>
+          <span>👥 ${r.guests} guests</span>
+        </div>
+        <div class="flex gap-2 pt-3 border-t border-gray-50">
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold" style="background:rgba(27,58,75,0.05);color:#1b3a4b">✏ Edit</button>
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold ${r.live ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'}">${r.live ? '🚫 Hide' : '👁 Show'}</button>
+          <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-400">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+let currentFilter = 'all';
+
+function renderBookings(filter) {
+  const list = filter === 'all' ? BOOKINGS : BOOKINGS.filter(b => b.status === filter);
+  document.getElementById('bookings-list').innerHTML = list.map(b => {
+    const n = nights(b.cin, b.cout);
+    const badgeClass = b.status === 'pending' ? 'badge-pending' : b.status === 'confirmed' ? 'badge-confirmed' : 'badge-cancelled';
+    const label = b.status.charAt(0).toUpperCase() + b.status.slice(1);
+    return `
+    <div class="bg-white rounded-2xl border shadow-sm overflow-hidden ${b.status === 'cancelled' ? 'opacity-60' : 'border-gray-100'}">
+      <button onclick="toggleBooking('${b.id}')" class="w-full text-left px-5 py-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="font-semibold text-sm" style="color:#1b3a4b">${b.name}</span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase ${badgeClass}">${label}</span>
+              <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg font-mono">${b.ref}</span>
+            </div>
+            <p class="text-xs font-medium" style="color:#c1714f;opacity:.8">${b.room}</p>
+            <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400 flex-wrap">
+              <span>📅 ${fmtDate(b.cin)} → ${fmtDate(b.cout)}</span>
+              <span>${n} night${n !== 1 ? 's' : ''}</span>
+              <span>👥 ${b.guests}</span>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="font-bold text-sm" style="color:#1b3a4b">${b.total.toLocaleString()} ${b.currency}</p>
+            <p class="text-xs text-gray-400 mt-1">${b.created}</p>
+          </div>
+        </div>
+      </button>
+      <div id="detail-${b.id}" class="booking-details px-5 pb-5 border-t border-gray-50">
+        <div class="grid sm:grid-cols-2 gap-4 py-4 text-sm">
+          <div class="space-y-2">
+            <p class="flex items-center gap-2 text-gray-600">✉ ${b.email}</p>
+            <p class="flex items-center gap-2 text-gray-600">📞 ${b.phone}</p>
+          </div>
+          ${b.note ? `<div class="flex items-start gap-2 text-gray-600">💬 <p class="text-xs leading-relaxed">${b.note}</p></div>` : ''}
+        </div>
+        ${b.status !== 'cancelled' ? `
+        <div class="flex gap-2 pt-3 border-t border-gray-50">
+          ${b.status === 'pending' ? `<button class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-semibold">✓ Confirm</button>` : ''}
+          ${b.status === 'confirmed' ? `<span class="flex-1 flex items-center justify-center gap-1 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-semibold">✓ Confirmed</span>` : ''}
+          <button class="px-4 py-2.5 bg-red-50 text-red-500 rounded-xl text-xs font-semibold flex items-center gap-1">✕ Cancel</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleBooking(id) {
+  const el = document.getElementById('detail-' + id);
+  el.classList.toggle('open');
+}
+
+function showTab(tab) {
+  document.getElementById('panel-rooms').classList.toggle('hidden', tab !== 'rooms');
+  document.getElementById('panel-bookings').classList.toggle('hidden', tab !== 'bookings');
+  document.getElementById('tab-rooms').className = (tab === 'rooms' ? 'tab-active' : 'tab-inactive') + ' flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-colors';
+  document.getElementById('tab-bookings').className = (tab === 'bookings' ? 'tab-active' : 'tab-inactive') + ' relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-colors';
+}
+
+function filterBookings(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    const isActive = btn.dataset.filter === f;
+    btn.className = 'filter-btn px-4 py-2 rounded-xl text-xs font-semibold border ' + (isActive ? 'tab-active' : 'tab-inactive');
+    const badge = btn.querySelector('span');
+    if (badge) badge.className = 'ml-1.5 px-1.5 py-0.5 rounded-full text-[0.6rem] font-bold ' + (isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500');
+  });
+  renderBookings(f);
+}
+
+renderRooms();
+renderBookings('all');
+</script>
+</body>
+</html>
